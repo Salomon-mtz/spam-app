@@ -8,8 +8,16 @@ import {
   Button,
   TextField,
   Chip,
-
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from "@mui/material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function LeftSide() {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -18,6 +26,7 @@ function LeftSide() {
     details: {},
     tag: "",
     confidenceScores: {},
+    predicted_class: "", // Ensure this is part of your results state
   });
 
   const handleChange = (event, newValue) => {
@@ -61,41 +70,48 @@ function LeftSide() {
       {selectedTab === 0 ? (
         <SignInForm toggleDrawer={toggleDrawer} setResults={setResults} />
       ) : (
-        <SignUpForm toggleDrawer={toggleDrawer} setResults={setResults} />
+        <SignUpForm
+          toggleDrawer={toggleDrawer}
+          setResults={setResults}
+          results={results}
+        />
       )}
-      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
-        <Box
-          sx={{ width: 500, padding: 2 }}
-          role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
-        >
-          <Typography
-            variant="h5"
-            color="secondary"
-            sx={{ fontWeight: "bold", mb: 2 }}
+      {selectedTab === 0 && drawerOpen && (
+        <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
+          <Box
+            sx={{ width: 500, padding: 2 }}
+            role="presentation"
+            onClick={toggleDrawer(false)}
+            onKeyDown={toggleDrawer(false)}
           >
-            Result Display
-          </Typography>
-          {results &&
-            results.confidenceScores &&
-            Object.entries(results.confidenceScores).map(([model, score]) => (
-              <Typography key={model} sx={{ mb: 1 }}>
-                {model.toUpperCase()}:{" "}
-                {score ? `${(score * 100).toFixed(2)}%` : "N/A"}
-              </Typography>
-            ))}
-          <Chip
-            label={results.tag}
-            sx={{
-              backgroundColor: results.tag === "Spam" ? "red" : "green",
-              color: "white",
-              fontWeight: "bold",
-              mt: 2,
-            }}
-          />
-        </Box>
-      </Drawer>
+            <Typography
+              variant="h5"
+              color="secondary"
+              sx={{ fontWeight: "bold", mb: 2 }}
+            >
+              Result Display
+            </Typography>
+            {results.confidenceScores &&
+              Object.entries(results.confidenceScores).map(([model, score]) => (
+                <Typography key={model} sx={{ mb: 1 }}>
+                  {model.toUpperCase()}:{" "}
+                  {score ? `${(score * 100).toFixed(2)}%` : "N/A"}
+                </Typography>
+              ))}
+            <Chip
+              label={results.predicted_class === "Spam" ? "Spam" : "Not Spam"}
+              sx={{
+                backgroundColor:
+                  results.predicted_class === "Spam" ? "red" : "green",
+                color: "white",
+                fontWeight: "bold",
+                mt: 2,
+              }}
+            />
+          </Box>
+        </Drawer>
+      )}
+      <ToastContainer />
     </Box>
   );
 }
@@ -115,12 +131,27 @@ function SignInForm({ toggleDrawer, setResults }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const emailData = `From: ${formData.emailFrom}\nSubject: ${formData.emailSubject}\nBody: Please find the attached file(s). Total attachments: ${formData.attachmentCount}, types: ${formData.attachmentExtension}`;
+    if (
+      !formData.emailFrom ||
+      !formData.emailSubject ||
+      !formData.attachmentCount ||
+      !formData.attachmentExtension
+    ) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
 
-    const response = await fetch("http://127.0.0.1:5000/predict", {
+    const emailData = {
+      email_from: formData.emailFrom,
+      email_subject: formData.emailSubject,
+      attachment_count: formData.attachmentCount,
+      attachment_extension: formData.attachmentExtension,
+    };
+
+    const response = await fetch("https://eca3-172-203-93-51.ngrok-free.app/single", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emailData: emailData }),
+      body: JSON.stringify(emailData),
     });
     const result = await response.json();
     setResults(result); // Store the result in state
@@ -178,7 +209,6 @@ function SignInForm({ toggleDrawer, setResults }) {
       />
       <TextField
         name="attachmentExtension"
-        required
         label="Attachment Extension"
         variant="outlined"
         fullWidth
@@ -199,8 +229,9 @@ function SignInForm({ toggleDrawer, setResults }) {
   );
 }
 
-function SignUpForm({ toggleDrawer, setResults }) {
+function SignUpForm({ toggleDrawer, setResults, results }) {
   const [file, setFile] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -209,20 +240,28 @@ function SignUpForm({ toggleDrawer, setResults }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!file) {
-      alert("Please upload a file.");
+      toast.error("Please upload a CSV file.");
       return;
     }
+
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch("http://127.0.0.1:5000/predict_csv", {
+    const response = await fetch("https://eca3-172-203-93-51.ngrok-free.app/csv", {
       method: "POST",
       body: formData,
     });
     const result = await response.json();
-    console.log(result);
-    setResults(result); // Assuming result.results is an array of results
+
+    if (result.predictions) {
+      result.predictions.forEach((prediction, index) => {
+        prediction.id = index + 1;
+      });
+    }
+
+    setResults(result);
     toggleDrawer(true)();
+    setDrawerOpen(true);
   };
 
   return (
@@ -253,6 +292,57 @@ function SignUpForm({ toggleDrawer, setResults }) {
       >
         Execute
       </Button>
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      >
+        <Box sx={{ width: "auto", padding: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+            CSV Results
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell align="right">Email From</TableCell>
+                  <TableCell align="right">Predicted Class</TableCell>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {results.predictions &&
+                  results.predictions.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {row.id}
+                      </TableCell>
+                      <TableCell align="right">
+                        {row.email_from} {/* Display Email From data */}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Chip
+                          label={row.predicted_class}
+                          sx={{
+                            backgroundColor:
+                              row.predicted_class === "Spam" ? "red" : "green",
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </Drawer>
+      <ToastContainer />
     </Box>
   );
 }
