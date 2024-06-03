@@ -1,5 +1,4 @@
 import React from "react";
-import Navbar from "../components/Navbar/Navbar";
 import RightSide from "../components/RightSide/RightSide";
 import LeftSide from "../components/LeftSide/LeftSide";
 import { Grid, Box } from "@mui/material";
