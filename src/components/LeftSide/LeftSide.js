@@ -148,11 +148,14 @@ function SignInForm({ toggleDrawer, setResults }) {
       attachment_extension: formData.attachmentExtension,
     };
 
-    const response = await fetch("https://eca3-172-203-93-51.ngrok-free.app/single", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(emailData),
-    });
+    const response = await fetch(
+      "https://eca3-172-203-93-51.ngrok-free.app/single",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(emailData),
+      }
+    );
     const result = await response.json();
     setResults(result); // Store the result in state
     toggleDrawer(true)();
@@ -247,10 +250,13 @@ function SignUpForm({ toggleDrawer, setResults, results }) {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch("https://eca3-172-203-93-51.ngrok-free.app/csv", {
-      method: "POST",
-      body: formData,
-    });
+    const response = await fetch(
+      "https://eca3-172-203-93-51.ngrok-free.app/csv",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
     const result = await response.json();
 
     if (result.predictions) {
@@ -306,6 +312,7 @@ function SignUpForm({ toggleDrawer, setResults, results }) {
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
+                  <TableCell align="right">Email Subject</TableCell>
                   <TableCell align="right">Email From</TableCell>
                   <TableCell align="right">Predicted Class</TableCell>
                 </TableRow>
@@ -321,6 +328,7 @@ function SignUpForm({ toggleDrawer, setResults, results }) {
                       <TableCell component="th" scope="row">
                         {row.id}
                       </TableCell>
+                      <TableCell align="right">{row.email_subject}</TableCell>
                       <TableCell align="right">
                         {row.email_from} {/* Display Email From data */}
                       </TableCell>
