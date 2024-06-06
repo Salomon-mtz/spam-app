@@ -89,7 +89,23 @@ function LeftSide() {
               color="secondary"
               sx={{ fontWeight: "bold", mb: 2 }}
             >
-              Result Display
+              Spam Detection Results
+            </Typography>
+            <Typography variant="h6" color="black" sx={{ mb: 2 }}>
+              Predict whether an email is spam using various models like SVM,
+              Random Forest, Naive Bayes, and MLP. Metrics:
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              - SVM Accuracy: 0.87, Precision: 0.88, F1 Score: 0.75
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              - NB Accuracy: 0.88, Precision: 0.84, F1 Score: 0.78
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              - RF Accuracy: 0.91, Precision: 0.86, F1 Score: 0.84
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              - MLP Accuracy: 0.90, Precision: 0.84, F1 Score: 0.82
             </Typography>
             {results.confidenceScores &&
               Object.entries(results.confidenceScores).map(([model, score]) => (
@@ -149,7 +165,7 @@ function SignInForm({ toggleDrawer, setResults }) {
     };
 
     const response = await fetch(
-      "https://eca3-172-203-93-51.ngrok-free.app/single",
+      "https://25f5-172-203-93-51.ngrok-free.app/single",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -251,7 +267,7 @@ function SignUpForm({ toggleDrawer, setResults, results }) {
     formData.append("file", file);
 
     const response = await fetch(
-      "https://eca3-172-203-93-51.ngrok-free.app/csv",
+      "https://25f5-172-203-93-51.ngrok-free.app/csv",
       {
         method: "POST",
         body: formData,
@@ -306,6 +322,22 @@ function SignUpForm({ toggleDrawer, setResults, results }) {
         <Box sx={{ width: "auto", padding: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
             CSV Results
+          </Typography>
+          <Typography variant="h6" color="black" sx={{ mb: 2 }}>
+            Predict whether an email is spam using various models like SVM,
+            Random Forest, Naive Bayes, and MLP. Metrics:
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
+            - SVM Accuracy: 0.87, Precision: 0.88, F1 Score: 0.75
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
+            - NB Accuracy: 0.88, Precision: 0.84, F1 Score: 0.78
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
+            - RF Accuracy: 0.91, Precision: 0.86, F1 Score: 0.84
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
+            - MLP Accuracy: 0.90, Precision: 0.84, F1 Score: 0.82
           </Typography>
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">

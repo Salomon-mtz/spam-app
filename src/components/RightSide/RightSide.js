@@ -71,6 +71,14 @@ function RightSide() {
               fontWeight: "bold",
             }}
           />
+           <Chip
+            label="MLP"
+            sx={{
+              backgroundColor: primaryBlue,
+              color: "white",
+              fontWeight: "bold",
+            }}
+          />
         </Stack>
       </Box>
     </Box>
